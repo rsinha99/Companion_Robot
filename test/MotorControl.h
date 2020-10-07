@@ -39,3 +39,28 @@ class MotorControl{
       digitalWrite(this->INB_pin, LOW);
    }
 };
+
+class TickCounter {
+  public:
+    int ticks;
+    int prev_val = LOW;
+    byte outA_pin;
+  public:
+    TickCounter(byte outA_pin) {
+      this->outA_pin = outA_pin;
+      ticks = 0;
+      pinMode(this->outA_pin, INPUT);
+    }
+
+    void resetTicks() {
+      ticks = 0;
+    }
+
+    void updateTick() {
+      int curr_val = digitalRead(outA_pin);
+      if (curr_val != prev_val) {
+        ticks += 1;
+        prev_val = curr_val;
+      }
+    }
+};
