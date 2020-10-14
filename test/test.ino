@@ -99,10 +99,12 @@ void loop() {
     error = 0;
     Serial.println("Hello");
   }
-//  centerDistance = centerUltrasound.getDistance();
-//  if (centerDistance <= STOP_DISTANCE_CENTER) {
-//    go_stop();
-//  }
+  centerDistance = centerUltrasound.getDistance();
+  if (centerDistance <= STOP_DISTANCE_CENTER) {
+    go_stop();
+  } else {
+    go_forward();
+  }
 }
 
 void set_speed() {
