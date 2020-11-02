@@ -25,16 +25,21 @@ video_capture = cv2.VideoCapture(0)
 nathan_image = face_recognition.load_image_file("Nathan.jpg")
 nathan_face_encoding = face_recognition.face_encodings(nathan_image)[0]
 
+renee_image = face_recognition.load_image_file("Renee.jpeg")
+renee_face_encoding = face_recognition.face_encodings(renee_image)[0]
+
 # Create arrays of known face encodings and their names
 known_face_encodings = [
     # obama_face_encoding,
     # biden_face_encoding,
-    nathan_face_encoding
+    nathan_face_encoding,
+    renee_face_encoding
 ]
 known_face_names = [
     #"Barack Obama",
     #"Joe Biden",
-    "Nathan Hsu"
+    "Nathan Hsu",
+    "Renee Wang"
 ]
 
 # Initialize some variables
