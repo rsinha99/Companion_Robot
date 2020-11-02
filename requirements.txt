@@ -6,7 +6,7 @@ click==7.1.2
 cmake==3.18.2.post1
 cryptography==2.1.4
 dlib==19.21.0
--e git+git://github.com/ageitgey/face_recognition
+git+git://github.com/ageitgey/face_recognition#egg=face_recognition
 Flask==1.1.1
 Flask-Ask==0.9.7
 future==0.18.2
