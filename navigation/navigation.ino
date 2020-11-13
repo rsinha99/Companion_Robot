@@ -1,6 +1,10 @@
 #include "MotorControl.h"
 #include "Ultrasound.h"
 
+/* TODO */
+// Set up a Queue for receiving serial commands
+
+
 // Ping sensor pins
 const int center_echo_pin = 8;
 const int center_trig_pin = 9;
@@ -73,6 +77,9 @@ int distanceTicks = 0;
 
 void setup() {
   Serial.begin(9600); // Set baud-rate
+  while(!Serial) {
+    ; // wait for serial to connect
+  }
   attachInterrupt(digitalPinToInterrupt(RightEncoder_pin), tickRight, CHANGE); //unfortunately, we cannot include the interrupt in the MotorControl class
   attachInterrupt(digitalPinToInterrupt(LeftEncoder_pin), tickLeft, CHANGE);
   go_stop(); // Guarantee that both motors are not moving at start
@@ -81,60 +88,66 @@ void setup() {
 }
 
 void loop() {
-  count++;
-
-  processCommand(); // Check Serial for command and process it
-
-  // Check the state of the robot: Obstacle, Distance, Angle
-  switch (state) {
-    case calibration:
-      // Use Proportional Feedback and Encoder readings to match the right motor's speed to the left motor.
-      // In this case, left motor is the master and right motor is the slave.
-      Serial.print("left ticks: "); Serial.println(leftTicks);
-      Serial.print("right ticks: "); Serial.println(rightTicks);
-      if (count >= 15) {
-        error = leftTicks - rightTicks;
-        right_PWM += error / kp;
-        set_speed();
-        leftTicks = 0;
-        rightTicks = 0;
-        count = 0;
-        error = 0;
-        calibration_count++;
-        Serial.println("Calibrating Motors");
-      }
-      if (calibration_count >= 10) {
-        state = waiting;
-        calibration_count = 0;
-      }
-      break;
-    case distance:
-      centerDistance = centerUltrasound.getDistance();
-      if (centerDistance <= STOP_DISTANCE_CENTER) {
-        updateDir(halt);
-      } else {
-        if (distanceTicks >= 15000) {
-          updateDir(halt);
-          delay(1000);
-          distanceTicks = 0;
-        } else {
-          updateDir(forward);
-        }
-      }
-      if (distanceTicks >= 3400) {
-        updateDir(halt);
-        delay(5000);
-        distanceTicks = 0;
-        state = distance;
-      } else {
-        updateDir(left);
-      }
-      break;
-    default:
-      updateDir(halt);
-  }
-
+  byte = Serial.read(1);
+  Serial.print("Received: " + byte);
 }
+
+// Commented out so that I can test the serial
+//void loop() {
+//  count++;
+//
+//  processCommand(); // Check Serial for command and process it
+//
+//  // Check the state of the robot: Obstacle, Distance, Angle
+//  switch (state) {
+//    case calibration:
+//      // Use Proportional Feedback and Encoder readings to match the right motor's speed to the left motor.
+//      // In this case, left motor is the master and right motor is the slave.
+//      Serial.print("left ticks: "); Serial.println(leftTicks);
+//      Serial.print("right ticks: "); Serial.println(rightTicks);
+//      if (count >= 15) {
+//        error = leftTicks - rightTicks;
+//        right_PWM += error / kp;
+//        set_speed();
+//        leftTicks = 0;
+//        rightTicks = 0;
+//        count = 0;
+//        error = 0;
+//        calibration_count++;
+//        Serial.println("Calibrating Motors");
+//      }
+//      if (calibration_count >= 10) {
+//        state = waiting;
+//        calibration_count = 0;
+//      }
+//      break;
+//    case distance:
+//      centerDistance = centerUltrasound.getDistance();
+//      if (centerDistance <= STOP_DISTANCE_CENTER) {
+//        updateDir(halt);
+//      } else {
+//        if (distanceTicks >= 15000) {
+//          updateDir(halt);
+//          delay(1000);
+//          distanceTicks = 0;
+//        } else {
+//          updateDir(forward);
+//        }
+//      }
+//      if (distanceTicks >= 3400) {
+//        updateDir(halt);
+//        delay(5000);
+//        distanceTicks = 0;
+//        state = distance;
+//      } else {
+//        updateDir(left);
+//      }
+//      break;
+//    default:
+//      updateDir(halt);
+//  }
+//
+//}
 
 // Process command coming from the Serial Port. The behavior changes depending
 // on what state the robot is in. The serial can also be used to change states.
