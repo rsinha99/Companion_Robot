@@ -3,6 +3,7 @@
 
 /* TODO */
 // Set up a Queue for receiving serial commands
+// Have Queue automatically remove messages and shift all values up when a command is executed
 
 
 // Ping sensor pins
@@ -75,9 +76,15 @@ int rightTicks = 0;
 int leftTicks = 0;
 int distanceTicks = 0;
 
+// Variables for Serial Communication
+byte queue[100];
+int queue_idx = 0;
+String readString;
+byte value;
+
 void setup() {
   Serial.begin(9600); // Set baud-rate
-  while(!Serial) {
+  while (!Serial) {
     ; // wait for serial to connect
   }
   attachInterrupt(digitalPinToInterrupt(RightEncoder_pin), tickRight, CHANGE); //unfortunately, we cannot include the interrupt in the MotorControl class
@@ -88,8 +95,37 @@ void setup() {
 }
 
 void loop() {
-  byte = Serial.read(1);
-  Serial.print("Received: " + byte);
+  while (!Serial.available()) {}
+  //  while(Serial.available()) {
+  //    if (Serial.available() > 0) {
+  //      char c = Serial.read();
+  //      readString += c;
+  //    }
+  //  }
+  //
+  //  if (readString.length() > 0) {
+  //    Serial.print("Arduino received: ");
+  //    Serial.println(readString);
+  //  }
+  //
+  //  delay (500);
+  while (Serial.available()) {
+    if (Serial.available() > 0) {
+      value = Serial.read();
+      queue[queue_idx] = value;
+      queue_idx++;
+    }
+  }
+
+  if (value != 0) {
+    Serial.write(value);
+  }
+  //
+  //    for (int i = 0; i < 100; i++) {
+  //      Serial.println(queue[i], BIN);
+  //    }
+  //    Serial.println(queue_idx);
+
 }
 
 // Commented out so that I can test the serial
@@ -202,7 +238,7 @@ void processCommand() {
           commandValue = commandByte & B00111111;
           updateDir(forward);
           break;
-        
+
       }
     }
   }
@@ -254,7 +290,7 @@ void updateDir(Directions newDir) {
   if (state == distance) {
     respondToCurrDir();
   }
-  
+
 }
 
 void respondToCurrDir() {
