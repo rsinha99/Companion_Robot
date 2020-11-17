@@ -1,5 +1,6 @@
 #include "MotorControl.h"
 #include "Ultrasound.h"
+#include <cppQueue.h>
 
 /* TODO */
 // Set up a Queue for receiving serial commands
@@ -77,11 +78,11 @@ int leftTicks = 0;
 int distanceTicks = 0;
 
 // Variables for Serial Communication
-byte queue[100];
-int queue_idx = 0;
+int q_size = 20;
+Queue q(sizeof(byte), q_size, FIFO);  // Queue to store commands from Nvidia
 String readString;
 byte value;
-
+boolean first = true;
 void setup() {
   Serial.begin(9600); // Set baud-rate
   while (!Serial) {
@@ -95,36 +96,6 @@ void setup() {
 }
 
 void loop() {
-  while (!Serial.available()) {}
-  //  while(Serial.available()) {
-  //    if (Serial.available() > 0) {
-  //      char c = Serial.read();
-  //      readString += c;
-  //    }
-  //  }
-  //
-  //  if (readString.length() > 0) {
-  //    Serial.print("Arduino received: ");
-  //    Serial.println(readString);
-  //  }
-  //
-  //  delay (500);
-  while (Serial.available()) {
-    if (Serial.available() > 0) {
-      value = Serial.read();
-      queue[queue_idx] = value;
-      queue_idx++;
-    }
-  }
-
-  if (value != 0) {
-    Serial.write(value);
-  }
-  //
-  //    for (int i = 0; i < 100; i++) {
-  //      Serial.println(queue[i], BIN);
-  //    }
-  //    Serial.println(queue_idx);
 
 }
 
@@ -184,6 +155,19 @@ void loop() {
 //  }
 //
 //}
+
+/* We don't use while loops here since we don't want the Serial to be blocking */
+void serialEvent() {
+  if (Serial.available() > 0) {
+    value = Serial.read();
+    q.push(&value);
+  }
+
+  if (!q.isEmpty()) {
+    q.pop(&value);  //store popped byte into variable value
+    Serial.write(value);
+  }
+}
 
 // Process command coming from the Serial Port. The behavior changes depending
 // on what state the robot is in. The serial can also be used to change states.

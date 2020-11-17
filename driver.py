@@ -5,22 +5,20 @@ import time
 isWindowsOS = True
 
 if isWindowsOS:
-    ser = serial.Serial(port='COM5', baudrate=9600, timeout=1)
+    port = 'COM4'
 else:
-    ser = serial.Serial(port="/dev/ttyUSB0", baudrate=9600, timeout=1)
+    port = '/dev/ttyUSB0'
+
+ser = serial.Serial(port=port, baudrate=9600, timeout=1)
 
 time.sleep(2)  # wait for Arduino to start up
 ser.flushInput()
-value = 0
-thing = str(6)
 ser.write(b'\xCC')
-time.sleep(1)
 ser.write(b'\xFF')
-time.sleep(1)
 ser.write(b'\xC0')
 time.sleep(1)
 
 while ser.in_waiting > 0:
-    msg = ser.read(ser.inWaiting())
+    msg = ser.read(1)
     print("Message from Arduino:")
     print(msg)
