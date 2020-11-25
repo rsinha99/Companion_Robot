@@ -2,10 +2,9 @@
 #include "Ultrasound.h"
 #include <cppQueue.h>
 
-/* TODO */
-// Set up a Queue for receiving serial commands
-// Have Queue automatically remove messages and shift all values up when a command is executed
-
+/* TODO
+    To find things I still need to do, use ctrl-F to find all instances of "TODO" in the code
+*/
 
 // Ping sensor pins
 const int center_echo_pin = 8;
@@ -43,33 +42,21 @@ const int STOP_DISTANCE_SIDE   = 25; // cm
 enum Directions {forward, backward, left, right, halt};
 // 0 - forward, 1 - backwards, 2 - left, 3 - right, 4 - halt
 
-enum States {calibration, obstacle, distance, following, waiting};
+enum Modes {calibration, obstacle, distance, following, waiting};
 // calibration - calibrate motor power, obstacle - basic obstacle avoidance
 // distance - specify distance to travel and turning angles
 // following - no specified distance; turns while moving forward at different turning speeds
 // waiting - robot is halted; awaiting commands
 
-// State Serial Code Variables
-const byte distance_code = B00000001;
-const byte following_code = B00000010;
-const byte calibration_code = B00000011;
-const byte halt_code = B00000000;
-
 //globals for motor control
 Directions currDir = forward;
 Directions prevDir = halt;
-States state = calibration;
-byte commandValue = 0;
+Modes mode = waiting;
+boolean isExecuting = false;
 
-//globals for crash avoidance
-boolean dangerCenter = false;
-boolean dangerLeft   = false;
-boolean dangerRight  = false;
-boolean dangerDetected = false;
 long leftDistance = 0, centerDistance = 0, rightDistance = 0;
 
 // Variables for the encoder
-int count = 0;
 int calibration_count = 0;
 int error = 0;
 int kp = 80;
@@ -80,154 +67,147 @@ int distanceTicks = 0;
 // Variables for Serial Communication
 int q_size = 20;
 Queue q(sizeof(byte), q_size, FIFO);  // Queue to store commands from Nvidia
-String readString;
-byte value;
-boolean first = true;
+byte command;
+
 void setup() {
   Serial.begin(9600); // Set baud-rate
   while (!Serial) {
     ; // wait for serial to connect
   }
-  attachInterrupt(digitalPinToInterrupt(RightEncoder_pin), tickRight, CHANGE); //unfortunately, we cannot include the interrupt in the MotorControl class
-  attachInterrupt(digitalPinToInterrupt(LeftEncoder_pin), tickLeft, CHANGE);
   go_stop(); // Guarantee that both motors are not moving at start
-  set_speed();
+  set_speed(right_PWM, left_PWM);
   delay(500);
 }
 
+// TODO: What prevents the last instruction from constantly repeating if no new command is received?
 void loop() {
-
-}
-
-// Commented out so that I can test the serial
-//void loop() {
-//  count++;
-//
-//  processCommand(); // Check Serial for command and process it
-//
-//  // Check the state of the robot: Obstacle, Distance, Angle
-//  switch (state) {
-//    case calibration:
-//      // Use Proportional Feedback and Encoder readings to match the right motor's speed to the left motor.
-//      // In this case, left motor is the master and right motor is the slave.
-//      Serial.print("left ticks: "); Serial.println(leftTicks);
-//      Serial.print("right ticks: "); Serial.println(rightTicks);
-//      if (count >= 15) {
-//        error = leftTicks - rightTicks;
-//        right_PWM += error / kp;
-//        set_speed();
-//        leftTicks = 0;
-//        rightTicks = 0;
-//        count = 0;
-//        error = 0;
-//        calibration_count++;
-//        Serial.println("Calibrating Motors");
-//      }
-//      if (calibration_count >= 10) {
-//        state = waiting;
-//        calibration_count = 0;
-//      }
-//      break;
-//    case distance:
-//      centerDistance = centerUltrasound.getDistance();
-//      if (centerDistance <= STOP_DISTANCE_CENTER) {
-//        updateDir(halt);
-//      } else {
-//        if (distanceTicks >= 15000) {
-//          updateDir(halt);
-//          delay(1000);
-//          distanceTicks = 0;
-//        } else {
-//          updateDir(forward);
-//        }
-//      }
-//      if (distanceTicks >= 3400) {
-//        updateDir(halt);
-//        delay(5000);
-//        distanceTicks = 0;
-//        state = distance;
-//      } else {
-//        updateDir(left);
-//      }
-//      break;
-//    default:
-//      updateDir(halt);
-//  }
-//
-//}
-
-/* We don't use while loops here since we don't want the Serial to be blocking */
-void serialEvent() {
-  if (Serial.available() > 0) {
-    value = Serial.read();
-    q.push(&value);
-  }
-
-  if (!q.isEmpty()) {
-    q.pop(&value);  //store popped byte into variable value
-    Serial.write(value);
-  }
-}
-
-// Process command coming from the Serial Port. The behavior changes depending
-// on what state the robot is in. The serial can also be used to change states.
-// Commands are a single byte. Command codes are listed below:
-// States:
-//    Distance    0000 0001
-//    Following   0000 0010
-//    Calibration 0000 0011
-//    Waiting     0000 0000
-// Directions:
-//    Forward     11XX XXXX
-//    Backward    001X XXXX
-//    Left        01XX XXXX
-//    Right       10XX XXXX
-// When in Distance mode, the X'd values represent distances and in-place turn angles.
-// When in following mode, the X'd values represent turning speeds (difference in
-// power betewen motors). This only applies for left and right directions.
-void processCommand() {
-  if (Serial.available() > 0) {
-    byte commandByte = Serial.read();
-    bool isStateChange = commandByte >> 4 == 0;
-    if (isStateChange) {
-      switch (commandByte) {
-        case 0:
-          state = waiting;
-          break;
-        case 1:
-          state = distance;
-          break;
-        case 2:
-          state = following;
-          break;
-        case 3:
-          state = calibration;
-          break;
+  acceptCommand();
+  switch (mode) {
+    case calibration:
+      calibrate_motors();
+      break;
+    case distance:
+      if (!q.isEmpty()) {
+        q.pop(&command);  //store popped byte into variable value
+        isExecuting = true;
+        //Serial.write(command);
+      } else {
+        isExecuting = false;
       }
+      break;
+    case following:
+      break;
+    case waiting: // just here to make it clear that I did not forget about this mode. It just does nothing by default.
+      isExecuting = false;
+      break;
+  }
+  if (isExecuting) {
+    processCommand(command);
+    isExecuting = false;
+  }
+}
+
+// Accept Command. Read serial; add command to queue if in Distance Mode and the instructions is not a System Instruction
+void acceptCommand() {
+  while (Serial.available() > 0) {
+    command = Serial.read();
+    bool isSystemCommand = command >> 4 == 1;
+    if (isSystemCommand) {
+      processCommand(command);
+    } else if (mode == distance) {
+      q.push(&command);
     } else {
-      switch (commandByte >> 6) {
-        case 0: //backwards
-          commandValue = commandByte & B00011111;
-          updateDir(backward);
-          break;
-        case 1: //left
-          commandValue = commandByte & B00111111;
-          updateDir(left);
-          break;
-        case 2: //right
-          commandValue = commandByte & B00111111;
-          updateDir(right);
-          break;
-        case 3: //forward
-          commandValue = commandByte & B00111111;
-          updateDir(forward);
-          break;
-
-      }
+      isExecuting = true; // command does not go to Queue; processes immediately
+      break;
     }
   }
 }
 
+// Process command. This can be either from the Serial Port or the Command Queue.
+// The behavior changes depending on what mode the robot is in. The serial can
+// also be used to change modes. Commands are a single byte composed of
+// Instruction Bits and Value Bits.
+//
+// Command codes are listed below:x
+// Modes (0000):
+//    Distance      0000 0001
+//    Following     0000 0010
+//    Calibration   0000 0011
+//    Waiting       0000 0000
+// System (0001): (These are not placed in the Queue)
+//    E-Halt Robot  0001 0000 (and Clear Queue)
+//    Clear Queue   0001 0001
+// Directions:
+//    Backward    001X XXXX
+//    Left        01XX XXXX
+//    Right       10XX XXXX
+//    Forward     11XX XXXX
+// When in Distance mode, the X'd values represent distances and in-place turn angles.
+// When in following mode, the X'd values represent turning speeds (difference in
+// power betewen motors). This only applies for left and right directions.
+//
+// Note: To change modes immediately, make sure to clear the Queue first
+void processCommand(byte command) {
+  int commandValue;
+  bool isModeChange = command >> 4 == 0;
+  bool isSystemCommand = command >> 4 == 1;
+  if (isModeChange) {
+    switch (command & B00001111) {
+      case 0: // The robot only enters this mode after calibration
+        mode = waiting;
+        break;
+      case 1:
+        mode = distance;
+        break;
+      case 2:
+        mode = following;
+        q.clean();
+        break;
+      case 3:
+        mode = calibration;
+        break;
+    }
+  } else if (isSystemCommand) {
+    switch (command & B00001111) {
+      case 0: // Halt the robot immediately
+        q.clean(); // clear Queue so that no other commands run
+        isExecuting = false;
+        updateDir(halt);
+        respondToCurrDir();
+        break;
+      case 1: // Clear Queue (not sure why we would do this without halting, though)
+        q.clean();
+        isExecuting = false;
+        break;
+    }
+  } else {
+    // TODO Modify these according to the design in the Google Slide
+    // Following Mode and Distance Mode make these do different things
+    // Maybe have a go_distance(command) function and a follow(command) function
+    switch (command >> 6) {
+      case 0: //backwards
+        commandValue = command & B00011111;
+
+        break;
+      case 1: //left
+        commandValue = command & B00111111;
+
+        break;
+      case 2: //right
+        commandValue = command & B00111111;
+
+        break;
+      case 3: //forward
+        commandValue = command & B00111111;
+
+        break;
+
+    }
+  }
+}
+
+// TODO: Complete this function
+// TODO: Find the number of ticks per the angle of rotation
 // Takes a centimeter input and outputs a distance tick count
 // About 80 encoder ticks per centimeter
 int go_distance(int distance) {
@@ -238,9 +218,70 @@ int go_distance(int distance) {
 }
 
 // Call this function to tell robot to recalibrate motor powers to drive straight
+// Modifies the right_PWM value
+//
+// TODO: Send back a Serial message if calibration succeeds/fails (if obstacle gets in way)
 void calibrate_motors() {
+  boolean halted = false;
+
+  updateDir(halt); // stop the robot
+  respondToCurrDir();
+  delay(500);
+  // Turn on the interrupt to detect encoder ticks
+  attachInterrupt(digitalPinToInterrupt(RightEncoder_pin), tickRight, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(LeftEncoder_pin), tickLeft, CHANGE);
+
+
+  updateDir(forward); // robot starts moving
+  respondToCurrDir();
+  delay(200); // Give robot chance to get up to speed
+
   calibration_count = 0;
-  state = calibration;
+  leftTicks = 0;
+  rightTicks = 0;
+
+  // Use Proportional Feedback and Encoder readings to match the right motor's speed to the left motor.
+  // In this case, left motor is the master and right motor is the slave.
+  while (1) {
+    centerDistance = centerUltrasound.getDistance();
+    if (centerDistance <= STOP_DISTANCE_CENTER) {
+      updateDir(halt);
+      respondToCurrDir();
+      // turn off the interrupts, so that they don't interfere with the Serial
+      detachInterrupt(digitalPinToInterrupt(RightEncoder_pin));
+      detachInterrupt(digitalPinToInterrupt(LeftEncoder_pin));
+      //TODO: Send Serial Message back to Nvidia stating a halt
+      Serial.write(B00000001);
+      break;
+    }
+
+    if (calibration_count >= 15) {
+      error = leftTicks - rightTicks;
+      int adjustment = error / kp;
+      right_PWM += adjustment;
+      set_speed(right_PWM, left_PWM);
+      delay(100);
+
+      leftTicks = 0;
+      rightTicks = 0;
+      calibration_count = 0;
+      error = 0;
+      if (adjustment >= -1 && adjustment <= 1) {
+        break;
+      }
+    }
+    calibration_count++;
+  }
+
+  updateDir(halt); // stop the robot!
+  respondToCurrDir();
+  mode = waiting;
+  // turn off the interrupts, so that they don't interfere with the Serial
+  detachInterrupt(digitalPinToInterrupt(RightEncoder_pin));
+  detachInterrupt(digitalPinToInterrupt(LeftEncoder_pin));
+  // TODO: Send a Serial Message to Nvidia stating successful calibration
+  Serial.write(B00000001);
+
 }
 
 
@@ -259,22 +300,12 @@ void updatePingData(void *pvParameters) {
     //    Serial.print("right cm: "); Serial.print(rightDistance);
     //    Serial.println();
 
-    // Update danger booleans
-    dangerLeft   = leftDistance   <= STOP_DISTANCE_SIDE;
-    dangerCenter = centerDistance <= STOP_DISTANCE_CENTER;
-    dangerRight  = rightDistance  <= STOP_DISTANCE_SIDE;
-    dangerDetected = dangerCenter || dangerRight || dangerLeft;
-
   }
 }
 
 void updateDir(Directions newDir) {
   prevDir = currDir;
   currDir = newDir;
-  if (state == distance) {
-    respondToCurrDir();
-  }
-
 }
 
 void respondToCurrDir() {
@@ -305,9 +336,10 @@ void tickRight() {
   rightTicks++;
 }
 
-void set_speed() {
-  leftMotor.setPWM(left_PWM);
-  rightMotor.setPWM(right_PWM);
+// Sets motor PWM values
+void set_speed(byte new_right_PWM, byte new_left_PWM) {
+  leftMotor.setPWM(new_left_PWM);
+  rightMotor.setPWM(new_right_PWM);
 }
 
 void go_stop() {
@@ -316,25 +348,21 @@ void go_stop() {
 }
 
 void go_forward() {
-  set_speed();
   leftMotor.forward();
   rightMotor.backward();
 }
 
 void go_backward() {
-  set_speed();
   leftMotor.backward();
   rightMotor.forward();
 }
 
 void go_left() {
-  set_speed();
   leftMotor.backward();
   rightMotor.backward();
 }
 
 void go_right() {
-  set_speed();
   leftMotor.forward();
   rightMotor.forward();
 }
