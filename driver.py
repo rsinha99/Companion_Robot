@@ -4,19 +4,25 @@ import time
 
 isWindowsOS = False
 
-if isWindowsOS:
-    port = 'COM5'
-else:
-    port = '/dev/ttyUSB0'
 
-ser = serial.Serial(port=port, baudrate=9600, timeout=1)
+def main():
+    if isWindowsOS:
+        port = 'COM5'
+    else:
+        port = '/dev/ttyUSB0'
 
-time.sleep(2)  # wait for Arduino to start up
-ser.flushInput()
-ser.write(b'\x03')  # Enter Calibration Mode
-time.sleep(1)
+    ser = serial.Serial(port=port, baudrate=9600, timeout=1)
 
-while ser.in_waiting > 0:
-    msg = ser.read(1)
-    print("Message from Arduino:")
-    print(msg)
+    time.sleep(2)  # wait for Arduino to start up
+    ser.flushInput()
+    ser.write(b'\x03')  # Enter Calibration Mode
+    time.sleep(1)
+
+    while ser.in_waiting > 0:
+        msg = ser.read(1)
+        print("Message from Arduino:")
+        print(msg)
+
+
+if __name__ == "__main__":
+    main()

@@ -32,8 +32,8 @@ Ultrasound centerUltrasound (center_echo_pin, center_trig_pin);
 Ultrasound rightUltrasound  (right_echo_pin, right_trig_pin);
 
 //constants
-const byte default_PWM = 40;
-byte right_PWM = default_PWM - 5; //adjustment for initial PWM; proportional control makes this value irrelevant later on
+const byte default_PWM = 32;
+byte right_PWM = default_PWM - 3; //adjustment for initial PWM; proportional control makes this value irrelevant later on
 byte left_PWM = default_PWM;
 const int STOP_DISTANCE_CENTER = 25; // cm
 const int STOP_DISTANCE_SIDE   = 25; // cm
@@ -144,7 +144,7 @@ void acceptCommand() {
 //    Forward     11XX XXXX
 // When in Distance mode, the X'd values represent distances and in-place turn angles.
 // When in following mode, the X'd values represent turning speeds (difference in
-// power betewen motors). This only applies for left and right directions.
+// power between motors). This only applies for left and right directions.
 //
 // Note: To change modes immediately, make sure to clear the Queue first
 void processCommand(byte command) {
@@ -184,23 +184,59 @@ void processCommand(byte command) {
     // TODO Modify these according to the design in the Google Slide
     // Following Mode and Distance Mode make these do different things
     // Maybe have a go_distance(command) function and a follow(command) function
-    switch (command >> 6) {
-      case 0: //backwards
-        commandValue = command & B00011111;
+    if (mode == following) {
+      switch (command >> 6) {
+        case 0: //backwards
+          commandValue = command & B00011111;
+          // Does Nothing for Now; TODO
+          break;
+        case 1: //left
+          commandValue = command & B00111111;
+          scan(commandValue, left);
 
-        break;
-      case 1: //left
-        commandValue = command & B00111111;
+          break;
+        case 2: //right
+          commandValue = command & B00111111;
+          scan(commandValue, right);
 
-        break;
-      case 2: //right
-        commandValue = command & B00111111;
+          break;
+        case 3: //forward-right or forward-left
+          commandValue = command & B00111111;
+          switch (commandValue >> 5) {
+            case 0: //right
+              follow(commandValue & B00011111, right);
+              break;
+            case 1: //left
+              follow(commandValue & B00011111, left);
+              break;
+          }
 
-        break;
-      case 3: //forward
-        commandValue = command & B00111111;
+          break;
 
-        break;
+      }
+    } else if (mode == distance) {
+      switch (command >> 6) {
+        case 0: //backwards
+          commandValue = command & B00011111;
+          
+          break;
+        case 1: //left
+          commandValue = command & B00111111;
+          
+
+          break;
+        case 2: //right
+          commandValue = command & B00111111;
+          
+
+          break;
+        case 3: //forward
+          commandValue = command & B00111111;
+          //go_distance(....);
+
+          break;
+
+      }
 
     }
   }
@@ -208,6 +244,7 @@ void processCommand(byte command) {
 
 // TODO: Complete this function
 // TODO: Find the number of ticks per the angle of rotation
+// TODO: Write to Serial: the distance traveled and if there was an obstacle
 // Takes a centimeter input and outputs a distance tick count
 // About 80 encoder ticks per centimeter
 int go_distance(int distance) {
@@ -215,6 +252,36 @@ int go_distance(int distance) {
   distanceTicks = 0;
   updateDir(forward);
 
+}
+
+// Used when the robot moves forward when following; makes robot veer left or right as desired
+void follow(byte turn_speed, Directions dir) {
+  updateDir(forward);
+  if (dir == right) {
+    byte new_PWM = left_PWM > turn_speed ? left_PWM - turn_speed : 0;
+    set_speed(right_PWM, new_PWM);
+  } else {
+    byte new_PWM = right_PWM > turn_speed ? right_PWM - turn_speed : 0;
+    set_speed(new_PWM, left_PWM);
+  }
+  respondToCurrDir();
+}
+
+// Used in following Mode; when robot needs to find a target, you can set how fast the robot rotates in place
+// Note that the larger the speed_reduction value, the slower the turn
+void scan(byte speed_reduction, Directions dir) {
+  if (dir == right) {
+    updateDir(right);
+  } else {
+    updateDir(left);
+  }
+  if (right_PWM > speed_reduction && left_PWM > speed_reduction) {
+    set_speed(right_PWM - speed_reduction, left_PWM - speed_reduction);
+  } else {
+    set_speed(0, 0);
+  }
+
+  respondToCurrDir();
 }
 
 // Call this function to tell robot to recalibrate motor powers to drive straight
@@ -251,7 +318,7 @@ void calibrate_motors() {
       detachInterrupt(digitalPinToInterrupt(RightEncoder_pin));
       detachInterrupt(digitalPinToInterrupt(LeftEncoder_pin));
       //TODO: Send Serial Message back to Nvidia stating a halt
-      Serial.write(B00000001);
+      Serial.write(B00000000);
       break;
     }
 
