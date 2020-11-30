@@ -66,7 +66,7 @@ int distanceTicks = 0;
 
 // Variables for Serial Communication
 int q_size = 20;
-Queue q(sizeof(byte), q_size, FIFO);  // Queue to store commands from Nvidia
+cppQueue q(sizeof(byte), q_size, FIFO);  // Queue to store commands from Nvidia
 byte command;
 
 void setup() {
@@ -98,10 +98,10 @@ void loop() {
     case following:
       break;
     case waiting: // just here to make it clear that I did not forget about this mode. It just does nothing by default.
-      isExecuting = false;
       break;
   }
   if (isExecuting) {
+    Serial.write(command);
     processCommand(command);
     isExecuting = false;
   }
@@ -318,7 +318,7 @@ void calibrate_motors() {
       detachInterrupt(digitalPinToInterrupt(RightEncoder_pin));
       detachInterrupt(digitalPinToInterrupt(LeftEncoder_pin));
       //TODO: Send Serial Message back to Nvidia stating a halt
-      Serial.write(B00000000);
+     
       break;
     }
 
@@ -347,7 +347,7 @@ void calibrate_motors() {
   detachInterrupt(digitalPinToInterrupt(RightEncoder_pin));
   detachInterrupt(digitalPinToInterrupt(LeftEncoder_pin));
   // TODO: Send a Serial Message to Nvidia stating successful calibration
-  Serial.write(B00000001);
+  
 
 }
 
