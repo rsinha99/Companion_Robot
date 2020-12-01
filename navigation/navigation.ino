@@ -303,7 +303,7 @@ void calibrate_motors() {
   updateDir(forward); // robot starts moving
   respondToCurrDir();
   byte msg = generateDistSerial(false, 0);
-  delay(200); // Give robot chance to get up to speed
+  delay(2000); // Give robot chance to get up to speed
 
   calibration_count = 0;
   leftTicks = 0;
@@ -324,12 +324,11 @@ void calibrate_motors() {
       break;
     }
 
-    if (calibration_count >= 50) {
+    if (calibration_count >= 250) {
       error = leftTicks - rightTicks;
       int adjustment = error / kp;
       right_PWM += adjustment;
       set_speed(right_PWM, left_PWM);
-      delay(100);
 
       leftTicks = 0;
       rightTicks = 0;
@@ -349,7 +348,7 @@ void calibrate_motors() {
   detachInterrupt(digitalPinToInterrupt(RightEncoder_pin));
   detachInterrupt(digitalPinToInterrupt(LeftEncoder_pin));
   // TODO: Send a Serial Message to Nvidia stating successful calibration
-  Serial.write(B00111111);
+  Serial.write(msg);
 
 }
 
