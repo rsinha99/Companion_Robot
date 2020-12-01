@@ -32,9 +32,9 @@ Ultrasound centerUltrasound (center_echo_pin, center_trig_pin);
 Ultrasound rightUltrasound  (right_echo_pin, right_trig_pin);
 
 //constants
-const byte default_PWM = 32;
-byte right_PWM = default_PWM - 3; //adjustment for initial PWM; proportional control makes this value irrelevant later on
-byte left_PWM = default_PWM;
+const int default_PWM = 32;
+int right_PWM = default_PWM - 3; //adjustment for initial PWM; proportional control makes this value irrelevant later on
+int left_PWM = default_PWM;
 const int STOP_DISTANCE_CENTER = 25; // cm
 const int STOP_DISTANCE_SIDE   = 25; // cm
 
@@ -52,7 +52,7 @@ enum Modes {calibration, obstacle, distance, following, waiting};
 Directions currDir = forward;
 Directions prevDir = halt;
 Modes mode = waiting;
-boolean isExecuting = false;
+bool isExecuting = false;
 
 long leftDistance = 0, centerDistance = 0, rightDistance = 0;
 
@@ -64,10 +64,11 @@ int rightTicks = 0;
 int leftTicks = 0;
 int distanceTicks = 0;
 
-// Variables for Serial Communication
-int q_size = 20;
+// Variables for Commands
+int q_size = 31;
 cppQueue q(sizeof(byte), q_size, FIFO);  // Queue to store commands from Nvidia
 byte command;
+bool isQueuePaused = false;
 
 void setup() {
   Serial.begin(9600); // Set baud-rate
@@ -301,6 +302,7 @@ void calibrate_motors() {
 
   updateDir(forward); // robot starts moving
   respondToCurrDir();
+  byte msg = generateDistSerial(false, 0);
   delay(200); // Give robot chance to get up to speed
 
   calibration_count = 0;
@@ -318,11 +320,11 @@ void calibrate_motors() {
       detachInterrupt(digitalPinToInterrupt(RightEncoder_pin));
       detachInterrupt(digitalPinToInterrupt(LeftEncoder_pin));
       //TODO: Send Serial Message back to Nvidia stating a halt
-     
+      msg = generateDistSerial(true, 0);
       break;
     }
 
-    if (calibration_count >= 15) {
+    if (calibration_count >= 50) {
       error = leftTicks - rightTicks;
       int adjustment = error / kp;
       right_PWM += adjustment;
@@ -347,27 +349,56 @@ void calibrate_motors() {
   detachInterrupt(digitalPinToInterrupt(RightEncoder_pin));
   detachInterrupt(digitalPinToInterrupt(LeftEncoder_pin));
   // TODO: Send a Serial Message to Nvidia stating successful calibration
-  
+  Serial.write(B00111111);
 
 }
 
-
-//check sensors for new obstacles
-void updatePingData(void *pvParameters) {
-  while (1) {
-    //Serial.println("Reading Ping Data");
-    // Get distances
-    leftDistance   = leftUltrasound.getDistance();
-    centerDistance = centerUltrasound.getDistance();
-    rightDistance  = rightUltrasound.getDistance();
-    //    Serial.print("left cm: "); Serial.print(leftDistance);
-    //    Serial.println();
-    //    Serial.print("center cm: "); Serial.print(centerDistance);
-    //    Serial.println();
-    //    Serial.print("right cm: "); Serial.print(rightDistance);
-    //    Serial.println();
-
+// Generates the serial if the Nvidia asks for the robot's state
+// bit 1    indicates that this is a state message (set to 1)
+// bit 2-3  indicates the mode the robot is in
+//          Distance Mode:    00
+//          Following Mode:   01
+//          Calibration Mode: 10
+//          Waiting Mode:     11
+// bit 4    Indicates if the Queue is paused (TODO: Not implemented yet)
+// bits 5-8 Indicates the number of items in the Queue
+byte generateStateSerial() {
+  byte msg = B11111111;
+  switch (mode) {
+    case distance:
+      msg = msg & B10011111;
+      break;
+    case following:
+      msg = msg & B10111111;
+      break;
+    case calibration:
+      msg = msg & B11011111;
+      break;
+    case waiting:
+      break;
   }
+
+  msg = msg & B11101111; //Queue is always NOT paused for now
+
+  msg = msg & q.getCount(); //getCount() returns uint16, so... it should work?
+
+  return msg;
+  
+}
+
+// Generates the Serial Message if Robot just traveled a certain distance
+// bit 1  ->  indicates it's a distance message (value 0)
+// bit 2 ->  obstacle or not (0 is no obstacle; 1 is obstacle)
+//      In calibration mode; no obstacle = success
+// bit 3-8 ->  Distance (TODO: Not implemented yet, since it involves more coding)
+byte generateDistSerial(bool detectedObstacle, byte dist_traveled) {
+ byte msg = B01111111;
+ if (!detectedObstacle) {
+  msg = msg & B10111111;
+ }
+
+ return msg;
+  
 }
 
 void updateDir(Directions newDir) {
@@ -404,9 +435,12 @@ void tickRight() {
 }
 
 // Sets motor PWM values
-void set_speed(byte new_right_PWM, byte new_left_PWM) {
-  leftMotor.setPWM(new_left_PWM);
-  rightMotor.setPWM(new_right_PWM);
+// If PWM is negative, this function auto sets PWM to 0
+void set_speed(int new_right_PWM, int new_left_PWM) {
+  int temp_right = new_right_PWM >= 0 ? new_right_PWM : 0;
+  int temp_left = new_left_PWM >= 0 ? new_left_PWM : 0;
+  leftMotor.setPWM(temp_left);
+  rightMotor.setPWM(temp_right);
 }
 
 void go_stop() {
