@@ -256,6 +256,7 @@ int go_distance(int distance) {
 }
 
 // Used when the robot moves forward when following; makes robot veer left or right as desired
+// TODO stop the robot if ultrasonic sensor detects something
 void follow(byte turn_speed, Directions dir) {
   updateDir(forward);
   if (dir == right) {

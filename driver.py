@@ -10,13 +10,16 @@ if isWindowsOS:
 else:
     port = '/dev/ttyUSB0'
 
+# TODO function to convert string to Serial Code for better user experience
+
 def main():
 
     ser = serial.Serial(port=port, baudrate=9600, timeout=1)
 
     time.sleep(2)  # wait for Arduino to start up
     ser.flushInput()
-    ser.write(b'\x03')  # Enter Calibration Mode
+    # ser.write(b'\x03')  # Enter Calibration Mode
+    ser.write(b'\C3')
     time.sleep(2)
 
     while (True):
