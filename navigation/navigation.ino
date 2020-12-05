@@ -148,6 +148,7 @@ void acceptCommand() {
 // power between motors). This only applies for left and right directions.
 //
 // Note: To change modes immediately, make sure to clear the Queue first
+// TODO: update the serial codes in this comment
 void processCommand(byte command) {
   int commandValue;
   bool isModeChange = command >> 4 == 0;
@@ -187,9 +188,12 @@ void processCommand(byte command) {
     // Maybe have a go_distance(command) function and a follow(command) function
     if (mode == following) {
       switch (command >> 6) {
-        case 0: //backwards
+        case 0: //backwards/halt
           commandValue = command & B00011111;
-          // Does Nothing for Now; TODO
+          if (commandValue == 0) {
+            updateDir(halt);
+            respondToCurrDir();
+          }
           break;
         case 1: //left
           commandValue = command & B00111111;
