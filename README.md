@@ -38,6 +38,6 @@ You may need to install the cppQueue library for the Arduino
 	If the value goes below 0 for Left and Right, it just results in the robot not moving.
 	*	Forward-Right	110X XXXX (make ‘X XXXX’ = 0 for no turn)
 	*	Forward-Left    111X XXXX
-	*	Back	        001X XXXX
+	*	Halt	        001X XXXX
 	*	Left	        01XX XXXX
 	*	Right	        10XX XXXX
