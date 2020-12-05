@@ -19,6 +19,7 @@ def main():
     time.sleep(2)  # wait for Arduino to start up
     ser.flushInput()
 
+    ser.write(b'\x02')  # Enter Following Mode
     while True:
         ser.write(b'\x40')
         time.sleep(5)
@@ -27,7 +28,7 @@ def main():
 
     # ser.write(b'\x03')  # Enter Calibration Mode
     # time.sleep(2)
-    #
+    
     # while True:
     #     if ser.in_waiting > 0:
     #         msg = ser.read(1)
