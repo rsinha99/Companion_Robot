@@ -9,3 +9,35 @@ The way it is set up right now is, the Nvidia is sending bytes over to the Ardui
 Dependencies:
 Arduino:
 You may need to install the cppQueue library for the Arduino
+
+## Serial Codes
+### Nvidia -> Arduino
+
+	Modes:
+	*	Distance	0000 0001
+	*	Following	0000 0010
+	*	Calibration 	0000 0011
+	*	Waiting	    	0000 0000
+	
+	System:
+	*	E-Halt Robot	0001 0000
+	*	Clear Queue	0001 0001
+	*	Set Precision	0001 01XX
+	*	Pause Queue	
+	*	Check State	0001 0010
+
+	In Distance Mode: Use Encoder to measure distance; relies on encoder ticks; Extra bits indicate distance/angle.
+	The units of the Value Bits for distance are in intervals of 5cm, so going forward has a max distance of about 64*5 = 320cm
+	*	Forward         11XX XXXX
+	*	Back            001X XXXX
+	*	Left            01XX XXXX
+	*	Right           10XX XXXX
+
+	Following: Go in a direction until Nvidia says otherwise
+	Extra bits indicate speed; i.e. the amount to subtract from the default PWM.
+	If the value goes below 0 for Left and Right, it just results in the robot not moving.
+	*	Forward-Right	110X XXXX (make ‘X XXXX’ = 0 for no turn)
+	*	Forward-Left    111X XXXX
+	*	Back	        001X XXXX
+	*	Left	        01XX XXXX
+	*	Right	        10XX XXXX
