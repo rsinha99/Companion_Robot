@@ -43,7 +43,9 @@ def thread_read():
 
 def forward():
     ser.write(b'\x00')
+    time.sleep(5)
     ser.write(b'\x02')
+    time.sleep(5)
     ser.write(b'\x00')
 
 def right():
