@@ -80,10 +80,9 @@ void setup() {
   delay(500);
 }
 
-// TODO: What prevents the last instruction from constantly repeating if no new command is received?
 void loop() {
   centerDistance = centerUltrasound.getDistance();
-  if (centerDistance <= STOP_DISTANCE_CENTER) {
+  if (centerDistance <= STOP_DISTANCE_CENTER) {   // This means sometimes it will halt while turning in place, but... eh, I'll figure that out later
     updateDir(halt);
     respondToCurrDir();
     isExecuting = false;

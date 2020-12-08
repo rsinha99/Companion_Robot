@@ -83,6 +83,7 @@ def calibrate():
 
 
 # TODO Modify the code to account for target being on the outer edges of the camera
+# TODO Modify the camera thread code to have variables that store the width of the camera
 def follow_thread():
     ser.write(b'\x02')          # Set robot to Following Mode
     while True:
