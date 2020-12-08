@@ -76,6 +76,9 @@ def nav_test():
             print(hexlify(msg))
 
 
+
+
+
 if __name__ == "__main__":
     print("starting...")
     nav_test()
