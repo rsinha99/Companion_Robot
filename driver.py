@@ -1,6 +1,7 @@
 import numpy as np
 import serial
 import time
+from threading import Thread, Event
 from binascii import hexlify
 
 isWindowsOS = False
@@ -10,9 +11,12 @@ if isWindowsOS:
 else:
     port = '/dev/ttyUSB0'
 
+shared_arr = [0]
+event = Event()
+
 # TODO function to convert string to Serial Code for better user experience
 
-def main():
+def nav_test():
 
     ser = serial.Serial(port=port, baudrate=9600, timeout=1)
 
@@ -36,6 +40,32 @@ def main():
     #         print(hexlify(msg))
 
 
+def thread_modify():
+    while True:
+        if event.is_set():
+            break
+        shared_arr[0] += 1
+        time.sleep(1)
+
+
+def thread_read():
+    while True:
+        if event.is_set():
+            break
+        print(f"shared data: {shared_arr[0]}")
+        time.sleep(1)
+
+
 if __name__ == "__main__":
     print("starting...")
-    main()
+    write = Thread(target=thread_modify())
+    read = Thread(target=thread_read())
+
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("Keyboard Interrupt was CAUGHT")
+        event.set()
+
+    # nav_test()
