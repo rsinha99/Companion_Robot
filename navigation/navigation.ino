@@ -82,6 +82,13 @@ void setup() {
 
 // TODO: What prevents the last instruction from constantly repeating if no new command is received?
 void loop() {
+  centerDistance = centerUltrasound.getDistance();
+  if (centerDistance <= STOP_DISTANCE_CENTER) {
+    updateDir(halt);
+    respondToCurrDir();
+    isExecuting = false;
+    mode = waiting; // This is to prevent any shenanigans
+  }
   acceptCommand();
   switch (mode) {
     case calibration:
@@ -110,7 +117,7 @@ void loop() {
 
 // Accept Command. Read serial; add command to queue if in Distance Mode and the instructions is not a System Instruction
 void acceptCommand() {
-  while (Serial.available() > 0) {
+  while (Serial.available() > 0) { // TODO should this just be an if statement to prevent blocking?
     command = Serial.read();
     bool isSystemCommand = command >> 4 == 1;
     if (isSystemCommand) {
@@ -223,16 +230,16 @@ void processCommand(byte command) {
       switch (command >> 6) {
         case 0: //backwards
           commandValue = command & B00011111;
-          
+
           break;
         case 1: //left
           commandValue = command & B00111111;
-          
+
 
           break;
         case 2: //right
           commandValue = command & B00111111;
-          
+
 
           break;
         case 3: //forward
@@ -307,7 +314,7 @@ void calibrate_motors() {
 
   updateDir(forward); // robot starts moving
   respondToCurrDir();
-  byte msg = generateDistSerial(false, 0);
+
   delay(2000); // Give robot chance to get up to speed
 
   calibration_count = 0;
@@ -325,7 +332,7 @@ void calibrate_motors() {
       detachInterrupt(digitalPinToInterrupt(RightEncoder_pin));
       detachInterrupt(digitalPinToInterrupt(LeftEncoder_pin));
       //TODO: Send Serial Message back to Nvidia stating a halt
-      msg = generateDistSerial(true, 0);
+      halted = true;
       break;
     }
 
@@ -353,6 +360,7 @@ void calibrate_motors() {
   detachInterrupt(digitalPinToInterrupt(RightEncoder_pin));
   detachInterrupt(digitalPinToInterrupt(LeftEncoder_pin));
   // TODO: Send a Serial Message to Nvidia stating successful calibration
+  byte msg = generateDistSerial(halted, 0);
   Serial.write(msg);
 
 }
@@ -387,7 +395,7 @@ byte generateStateSerial() {
   msg = msg & q.getCount(); //getCount() returns uint16, so... it should work?
 
   return msg;
-  
+
 }
 
 // Generates the Serial Message if Robot just traveled a certain distance
@@ -396,13 +404,13 @@ byte generateStateSerial() {
 //      In calibration mode; no obstacle = success
 // bit 3-8 ->  Distance (TODO: Not implemented yet, since it involves more coding)
 byte generateDistSerial(bool detectedObstacle, byte dist_traveled) {
- byte msg = B01111111;
- if (!detectedObstacle) {
-  msg = msg & B10111111;
- }
+  byte msg = B01111111;
+  if (!detectedObstacle) {
+    msg = msg & B10111111;
+  }
 
- return msg;
-  
+  return msg;
+
 }
 
 void updateDir(Directions newDir) {
