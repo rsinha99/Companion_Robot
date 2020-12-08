@@ -55,22 +55,6 @@ def left():
     ser.write(b'\x02')
     ser.write(b'\x80')
 
-def dance():
-    if following_mode = True:
-        while True:
-            ser.write(b'\x80')
-            time.sleep(5)
-            ser.write(b'\x40')
-            time.sleep(5)
-
-    if following_mode = False:
-        ser.write(b'\x02')
-        following_mode = True
-        while True:
-            ser.write(b'\x80')
-            time.sleep(5)
-            ser.write(b'\x40')
-            time.sleep(5)
 
 def nav_test():
     ser.write(b'\x02')  # Enter Following Mode
