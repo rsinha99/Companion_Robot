@@ -31,12 +31,12 @@ def dance():
 
 
 if __name__ == '__main__':
-    cam_thread = Thread(target=camera.camera_thread)
-    # face_rec_thread = Thread(target=face_rec.facerec_thread)
-    # face_rec_thread.start()
-    # threads.append(face_rec_thread)
-    cam_thread.start()
-    threads.append(cam_thread)
+    # cam_thread = Thread(target=camera.camera_thread)
+    face_rec_thread = Thread(target=face_rec.facerec_thread)
+    face_rec_thread.start()
+    threads.append(face_rec_thread)
+    # cam_thread.start()
+    # threads.append(cam_thread)
 
     try:
         while True:

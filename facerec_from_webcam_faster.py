@@ -13,37 +13,37 @@ cameraNumber = 'nvarguscamerasrc sensor-id=0 ee-mode=2 ee-strength=0 tnr-mode=2 
 video_capture = cv2.VideoCapture(cameraNumber)
 
 # Load Becca's face and learn how to recognize it
-becca_image = face_recognition.load_image_file("becca.jpg")
-becca_face_encoding = face_recognition.face_encodings(becca_image)[0]
+# becca_image = face_recognition.load_image_file("becca.jpg")
+# becca_face_encoding = face_recognition.face_encodings(becca_image)[0]
 
 # Load a sample picture and learn how to recognize it.
-rohit_image = face_recognition.load_image_file("rohit.jpg")
-rohit_face_encoding = face_recognition.face_encodings(rohit_image)[0]
+# rohit_image = face_recognition.load_image_file("rohit.jpg")
+# rohit_face_encoding = face_recognition.face_encodings(rohit_image)[0]
 
 # Load a second sample picture and learn how to recognize it.
-# nathan_image = face_recognition.load_image_file("nathan.jpg")
-# nathan_face_encoding = face_recognition.face_encodings(nathan_image)[0]
+nathan_image = face_recognition.load_image_file("nathan.jpg")
+nathan_face_encoding = face_recognition.face_encodings(nathan_image)[0]
 
 # Load a second sample picture and learn how to recognize it.
-GB_image = face_recognition.load_image_file("GB Photo TRX.jpg")
-GB_face_encoding = face_recognition.face_encodings(GB_image)[0]
+# GB_image = face_recognition.load_image_file("GB Photo TRX.jpg")
+# GB_face_encoding = face_recognition.face_encodings(GB_image)[0]
 
 # henry_image = face_recognition.load_image_file("henry.jpg")
 # henry_face_encoding = face_recognition.face_encodings(henry_image)[0]
 
 # Create arrays of known face encodings and their names
 known_face_encodings = [
-    becca_face_encoding,
-    rohit_face_encoding,
-    #   nathan_face_encoding,
-    GB_face_encoding,
+    # becca_face_encoding,
+    # rohit_face_encoding,
+    nathan_face_encoding,
+    # GB_face_encoding,
     #   henry_face_encoding
 ]
 known_face_names = [
-    "Becca Fehl",
-    "Rohit Sinha",
-    #    "Nathan Hsu",
-    "Dr Gil",
+    # "Becca Fehl",
+    # "Rohit Sinha",
+    "Nathan Hsu",
+    # "Dr Gil",
     #  "Henry Santer"
 ]
 
@@ -125,10 +125,10 @@ def facerec_thread():
         # Hit 'q' on the keyboard to quit!
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+    # Release handle to the webcam
+    video_capture.release()
+    cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
     facerec_thread()
-    # Release handle to the webcam
-    video_capture.release()
-    cv2.destroyAllWindows()
