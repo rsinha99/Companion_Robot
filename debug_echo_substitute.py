@@ -66,6 +66,7 @@ if __name__ == '__main__':
                 camera.event.set()
                 for i in range(len(threads)):
                     threads.pop().join()
+                break
 
     except (KeyboardInterrupt, Exception):
         driver.event.set()
