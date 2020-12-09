@@ -29,11 +29,11 @@ event = Event()
 
 # Get a reference to webcam #0 (the default one)
 def gstreamer_pipeline(
-        capture_width=3280,
-        capture_height=2464,
-        display_width=820,
-        display_height=616,
-        framerate=15,
+        capture_width=1280,
+        capture_height=720,
+        display_width=1280,
+        display_height=720,
+        framerate=30,
         flip_method=2,
 ):
     return (
