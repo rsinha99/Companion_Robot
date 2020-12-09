@@ -71,7 +71,7 @@ def left():
 
 def nav_test():
     ser.write(b'\x02')  # Enter Following Mode
-    for i in range(5):
+    for i in range(2):
         ser.write(b'\x40')
         time.sleep(5)
         ser.write(b'\x80')
@@ -126,6 +126,8 @@ if __name__ == "__main__":
     forward()
     print("Entering Nav Test")
     nav_test()
+    print("Going Forward")
+    forward()
     # color = Thread(target=camera.camera_thread)
     # color.start()
     # while True:
