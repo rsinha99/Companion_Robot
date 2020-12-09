@@ -87,8 +87,11 @@ void loop() {
     updateDir(halt);
     respondToCurrDir();
     isExecuting = false;
+    
+    if (mode != waiting) {
+      Serial.write(generateDistSerial(true, 0));
+    }
     mode = waiting; // This is to prevent any shenanigans
-    Serial.write(generateDistSerial(true, 0));
   }
   acceptCommand();
   switch (mode) {
@@ -326,17 +329,17 @@ void calibrate_motors() {
   // Use Proportional Feedback and Encoder readings to match the right motor's speed to the left motor.
   // In this case, left motor is the master and right motor is the slave.
   while (1) {
-//    centerDistance = centerUltrasound.getDistance();
-//    if (centerDistance <= STOP_DISTANCE_CENTER) {
-//      updateDir(halt);
-//      respondToCurrDir();
-//      // turn off the interrupts, so that they don't interfere with the Serial
-//      detachInterrupt(digitalPinToInterrupt(RightEncoder_pin));
-//      detachInterrupt(digitalPinToInterrupt(LeftEncoder_pin));
-//      //TODO: Send Serial Message back to Nvidia stating a halt
-//      halted = true;
-//      break;
-//    }
+    //    centerDistance = centerUltrasound.getDistance();
+    //    if (centerDistance <= STOP_DISTANCE_CENTER) {
+    //      updateDir(halt);
+    //      respondToCurrDir();
+    //      // turn off the interrupts, so that they don't interfere with the Serial
+    //      detachInterrupt(digitalPinToInterrupt(RightEncoder_pin));
+    //      detachInterrupt(digitalPinToInterrupt(LeftEncoder_pin));
+    //      //TODO: Send Serial Message back to Nvidia stating a halt
+    //      halted = true;
+    //      break;
+    //    }
 
     if (leftTicks > 2427) {
       error = leftTicks - rightTicks;
