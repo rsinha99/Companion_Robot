@@ -118,7 +118,9 @@ def follow_thread():
         if camera.currX == -1:    # No target to follow is detected
             ser.write(b'\x46')      # Turn left until target is found
             while camera.currX == -1 or camera.currX < 480 or camera.currX > 240:
-                None    # keep turning left until target is centered
+                print(camera.currX)
+                time.sleep(1)
+                # keep turning left until target is centered
         elif camera.currX > 480:  # Color is to the right of robot
             ser.write(b'\xE2')      # Drive Forward-right
         elif camera.currX < 240:    # Target is to the left of robot

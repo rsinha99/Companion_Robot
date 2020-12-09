@@ -47,6 +47,7 @@ if __name__ == '__main__':
     try:
         while True:
             command = input()
+            time.sleep(1)
             if command == 'follow':
                 follow_me()
     except (KeyboardInterrupt, Exception):
