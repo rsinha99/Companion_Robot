@@ -9,7 +9,9 @@ newCommand = False
 
 
 def forward():
-    None
+    forward_thread = Thread(target=driver.forward)
+    forward_thread.start()
+    threads.append(forward_thread)
 
 
 def left():
@@ -37,6 +39,7 @@ if __name__ == '__main__':
     # threads.append(face_rec_thread)
     cam_thread.start()
     threads.append(cam_thread)
+    forward()
 
     try:
         while True:

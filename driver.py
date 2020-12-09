@@ -42,11 +42,11 @@ def thread_read():
 
 
 def forward():
-    ser.write(b'\x00')
-    time.sleep(5)
     ser.write(b'\x02')
+    time.sleep(1)
+    ser.write(b'\xC0')
     time.sleep(5)
-    ser.write(b'\x00')
+    ser.write(b'\x10')
 
 def right():
     ser.write(b'\x40')
