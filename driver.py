@@ -111,7 +111,7 @@ def follow_thread():
     event.clear()
     ser.write(b'\x02')          # Set robot to Following Mode
     while True:
-        if ser.in_waiting > 0:
+        if ser.in_waiting > 0:  # At the moment, Arduino does not send message to Nvidia
             if ser.read(1) == b'\x7f':
                 print("Robot arrived")
                 break

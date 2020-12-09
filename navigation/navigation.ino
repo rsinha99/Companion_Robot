@@ -82,17 +82,6 @@ void setup() {
 }
 
 void loop() {
-  centerDistance = centerUltrasound.getDistance();
-  if (centerDistance <= STOP_DISTANCE_CENTER) {   // This means sometimes it will halt while turning in place, but... eh, I'll figure that out later
-    updateDir(halt);
-    respondToCurrDir();
-    isExecuting = false;
-    
-    if (mode != waiting) {
-      Serial.write(generateDistSerial(true, 0));
-    }
-    mode = waiting; // This is to prevent any shenanigans
-  }
   acceptCommand();
   switch (mode) {
     case calibration:
@@ -111,6 +100,19 @@ void loop() {
       break;
     case waiting: // just here to make it clear that I did not forget about this mode. It just does nothing by default.
       break;
+  }
+
+  // Code to stop the robot if obstacle is detected goes here, since it will prevent any inputs from running until the obstacle is not detected
+  centerDistance = centerUltrasound.getDistance();
+  if (centerDistance <= STOP_DISTANCE_CENTER) {   // This means sometimes it will halt while turning in place, but... eh, I'll figure that out later
+    updateDir(halt);
+    respondToCurrDir();
+    isExecuting = false;
+    
+//    if (mode != waiting) {
+//      Serial.write(generateDistSerial(true, 0));
+//    }
+//    mode = waiting; // This is to prevent any shenanigans
   }
   if (isExecuting) {
     // Serial.write(command);

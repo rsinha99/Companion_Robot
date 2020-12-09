@@ -5,11 +5,14 @@ import time
 from collections import deque
 from threading import Event
 
+# TODO add face recognition code to this. If it can follow a face, that would be more accurate that colors
+
 # define the lower and upper boundaries of the "green"
 # ball in the HSV color space, then initialize the
 # list of tracked points
 color = None
 
+# TODO adjust these thresholds
 if color == "green":
     colorLower = (29, 86, 6)
     colorUpper = (64, 255, 255)
