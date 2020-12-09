@@ -18,7 +18,7 @@ else:
 
 ser = serial.Serial(port=port, baudrate=9600, timeout=1)
 
-time.sleep(5)  # wait for Arduino to start up
+time.sleep(20)  # wait for Arduino to start up
 ser.flushInput()
 
 shared_arr = [0]
@@ -44,11 +44,11 @@ def thread_read():
 def forward():
     ser.write(b'\x02')
     time.sleep(1)
-    while True:
-        ser.write(b'\xC0')
-        time.sleep(5)
-        ser.write(b'\x10')
-        time.sleep(1)
+
+    ser.write(b'\xC0')
+    time.sleep(5)
+    ser.write(b'\x10')
+    time.sleep(1)
 
 def right():
     ser.write(b'\x40')
