@@ -21,7 +21,7 @@ video_capture = cv2.VideoCapture(cameraNumber)
 # rohit_face_encoding = face_recognition.face_encodings(rohit_image)[0]
 
 # Load a second sample picture and learn how to recognize it.
-nathan_image = face_recognition.load_image_file("nathan.jpg")
+nathan_image = face_recognition.load_image_file("Nathan.jpg")
 nathan_face_encoding = face_recognition.face_encodings(nathan_image)[0]
 
 # Load a second sample picture and learn how to recognize it.
