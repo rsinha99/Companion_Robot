@@ -3,7 +3,7 @@ import serial
 import time
 from threading import Thread, Event
 from binascii import hexlify
-# import camera
+import camera
 
 
 
@@ -60,11 +60,12 @@ def right():
     time.sleep(3)
 
 def left():
-    ser.write(b'\x80')
-    time.sleep(1)
+    #ser.write(b'\x80')
+    #time.sleep(1)
     ser.write(b'\x02')
     time.sleep(1)
-    ser.write(b'\x80')
+    while True:
+        ser.write(b'\x80')
 
 def stop():
     ser.write(b'\x10')
@@ -96,27 +97,54 @@ def dance():
 
 def calibrate():
     ser.write(b'\x03')
-    time.sleep(2)
+    while True:
+        if ser.in_waiting > 0:
+            msg = ser.read(1)
+            print("Message from Arduino")
+            print(hexlify(msg))
+            break
+
 
 
 # TODO Modify the code to account for target being on the outer edges of the camera
 # TODO Modify the camera thread code to have variables that store the width of the camera
-#def follow_thread():
-#    ser.write(b'\x02')          # Set robot to Following Mode
-#    while True:
-#        if event.is_set():
-#            break
+def follow_thread():
+    print("entered function")
+    video_width = 720
+    margin = 30
+    left_threshold = video_width / 3 + margin
+    right_threshold = video_width / 3 * 2 - margin
+    event.clear()
+    print("follow mode")
+    ser.write(b'\x02')          # Set robot to Following Mode
+    while True:
+        if ser.in_waiting > 0:  # At the moment, Arduino does not send message to Nvidia
+            if ser.read(1) == b'\x7f':
+                print("Robot arrived")
+                break
+        if event.is_set():
+            print("event is set")
+            break
 
-#        if camera.currX is None:    # No target to follow is detected
-#            ser.write(b'\x46')      # Turn left until target is found
-#            while camera.currX is None or camera.currX > 950 or camera.currX < 650:
-#                None    # keep turning left until target is centered
-#        elif camera.currX > 950:  # Color is to the right of robot
-#            ser.write(b'\xE2')      # Drive Forward-right
-#        elif camera.currX < 650:    # Target is to the left of robot
-#            ser.write(b'\xC2')      # Drive Forward-left
-#        else:
-#            ser.write(b'\xC0')
+        if camera.currX == -1:    # No target to follow is detected
+            print('turning left')
+            ser.write(b'\x46')      # Turn left until target is found
+            while camera.currX == -1 or camera.currX < left_threshold or camera.currX > right_threshold:
+                print(camera.currX)
+                time.sleep(1)
+                # keep turning left until target is centered
+        elif camera.currX > right_threshold:    # Color is to the right of robot
+            print('forward right')
+            ser.write(b'\xEE')                  # Drive Forward-right
+        elif camera.currX < left_threshold:     # Target is to the left of robot
+            print('foward left')
+            ser.write(b'\xCE')                  # Drive Forward-left
+        else:
+            print('forward')
+            ser.write(b'\xC0')                  # Drive straight
+
+        print(camera.currX)
+        time.sleep(1)
 
         # TODO if robot returns serial code "Obstacle", close this thread (break from loop)
 #        print(camera.currX)
@@ -127,7 +155,7 @@ def calibrate():
 
 if __name__ == "__main__":
     print("starting...")
-    right()
+    left()
     # color = Thread(target=camera.camera_thread)
     # color.start()
     # while True:
