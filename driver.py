@@ -3,7 +3,7 @@ import serial
 import time
 from threading import Thread, Event
 from binascii import hexlify
-import camera
+# import camera
 
 
 
@@ -47,6 +47,7 @@ def forward():
     ser.write(b'\xC0')
     time.sleep(5)
     ser.write(b'\x10')
+    time.sleep(1)
 
 def right():
     ser.write(b'\x40')
@@ -112,6 +113,8 @@ def follow_thread():
 
 if __name__ == "__main__":
     print("starting...")
+    forward()
+    calibrate
     # color = Thread(target=camera.camera_thread)
     # color.start()
     # while True:

@@ -52,7 +52,7 @@ if __name__ == '__main__':
     except (KeyboardInterrupt, Exception):
         driver.event.set()
         face_rec.event.set()
-        camera.event.set()
+        # camera.event.set()
         for i in range(len(threads)):
             threads.pop().join()
 
