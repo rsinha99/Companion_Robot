@@ -45,13 +45,13 @@ if __name__ == '__main__':
 
     try:
         while True:
-            time.sleep(0.5)
+            None
             # command = input()
             # if command == 'follow':
             #     follow_me()
     except (KeyboardInterrupt, Exception):
         driver.event.set()
-        face_rec.event.set()
+        # face_rec.event.set()
         # camera.event.set()
         for i in range(len(threads)):
             threads.pop().join()
