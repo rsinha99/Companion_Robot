@@ -125,9 +125,9 @@ def follow_thread():
                 time.sleep(1)
                 # keep turning left until target is centered
         elif camera.currX > 480:  # Color is to the right of robot
-            ser.write(b'\xE2')      # Drive Forward-right
+            ser.write(b'\xEF')      # Drive Forward-right
         elif camera.currX < 240:    # Target is to the left of robot
-            ser.write(b'\xC2')      # Drive Forward-left
+            ser.write(b'\xCF')      # Drive Forward-left
         else:
             ser.write(b'\xC0')
 
