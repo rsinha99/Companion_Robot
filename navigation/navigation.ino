@@ -35,7 +35,7 @@ Ultrasound rightUltrasound  (right_echo_pin, right_trig_pin);
 const int default_PWM = 32;
 int right_PWM = default_PWM - 3; //adjustment for initial PWM; proportional control makes this value irrelevant later on
 int left_PWM = default_PWM;
-const int STOP_DISTANCE_CENTER = 25; // cm
+const int STOP_DISTANCE_CENTER = 20; // cm
 const int STOP_DISTANCE_SIDE   = 25; // cm
 
 // enum for Direction
@@ -82,13 +82,14 @@ void setup() {
 }
 
 void loop() {
-//  centerDistance = centerUltrasound.getDistance();
-//  if (centerDistance <= STOP_DISTANCE_CENTER) {   // This means sometimes it will halt while turning in place, but... eh, I'll figure that out later
-//    updateDir(halt);
-//    respondToCurrDir();
-//    isExecuting = false;
-//    mode = waiting; // This is to prevent any shenanigans
-//  }
+  centerDistance = centerUltrasound.getDistance();
+  if (centerDistance <= STOP_DISTANCE_CENTER) {   // This means sometimes it will halt while turning in place, but... eh, I'll figure that out later
+    updateDir(halt);
+    respondToCurrDir();
+    isExecuting = false;
+    mode = waiting; // This is to prevent any shenanigans
+    Serial.write(generateDistSerial(true, 0));
+  }
   acceptCommand();
   switch (mode) {
     case calibration:
@@ -340,7 +341,13 @@ void calibrate_motors() {
     if (leftTicks > 2427) {
       error = leftTicks - rightTicks;
       int adjustment = error / kp;
-      right_PWM += adjustment;
+      if (adjustment > 3) {
+        right_PWM += 3;
+      } else if (adjustment < -3) {
+        right_PWM -= 3;
+      } else {
+        right_PWM += adjustment;
+      }
       set_speed(right_PWM, left_PWM);
 
       leftTicks = 0;
