@@ -108,6 +108,10 @@ def calibrate():
 # TODO make the code more robust so that if the target disappears for a few frames,
 #   the robot doesn't just stop and start searching immediately.
 def follow_thread():
+    video_width = 720
+    margin = 30
+    left_threshold = video_width / 3 + margin
+    right_threshold = video_width / 3 * 2 - margin
     event.clear()
     ser.write(b'\x02')          # Set robot to Following Mode
     while True:
@@ -120,16 +124,16 @@ def follow_thread():
 
         if camera.currX == -1:    # No target to follow is detected
             ser.write(b'\x46')      # Turn left until target is found
-            while camera.currX == -1 or camera.currX < 240 or camera.currX > 480:
+            while camera.currX == -1 or camera.currX < left_threshold or camera.currX > right_threshold:
                 print(camera.currX)
                 time.sleep(1)
                 # keep turning left until target is centered
-        elif camera.currX > 480:  # Color is to the right of robot
-            ser.write(b'\xEF')      # Drive Forward-right
-        elif camera.currX < 240:    # Target is to the left of robot
-            ser.write(b'\xCF')      # Drive Forward-left
+        elif camera.currX > right_threshold:    # Color is to the right of robot
+            ser.write(b'\xEE')                  # Drive Forward-right
+        elif camera.currX < left_threshold:     # Target is to the left of robot
+            ser.write(b'\xCE')                  # Drive Forward-left
         else:
-            ser.write(b'\xC0')
+            ser.write(b'\xC0')                  # Drive straight
 
         print(camera.currX)
         time.sleep(1)
