@@ -126,14 +126,12 @@ def follow_thread():
 if __name__ == "__main__":
     print("starting...")
     time.sleep(2)
-    print("Entering Calibration Mode")
-    calibrate()
     print("Going Forward")
     forward()
     print("Entering Nav Test")
     nav_test()
-    print("Going Forward")
-    forward()
+    print("Calibrating")
+    calibrate()
     # color = Thread(target=camera.camera_thread)
     # color.start()
     # while True:
