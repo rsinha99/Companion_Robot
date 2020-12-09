@@ -25,6 +25,7 @@ while True:
         if msg == b'\xFF':
             print("Arduino connected")
             break
+time.sleep(5)
 
 ser.flushInput()
 
@@ -50,7 +51,7 @@ def thread_read():
 
 def forward():
     ser.write(b'\x02')
-    time.sleep(1)
+    time.sleep(2)
 
     ser.write(b'\xC0')
     time.sleep(5)
