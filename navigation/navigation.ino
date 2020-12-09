@@ -59,7 +59,7 @@ long leftDistance = 0, centerDistance = 0, rightDistance = 0;
 // Variables for the encoder
 int calibration_count = 0;
 int error = 0;
-int kp = 80;
+int kp = 50;
 int rightTicks = 0;
 int leftTicks = 0;
 int distanceTicks = 0;
@@ -337,7 +337,7 @@ void calibrate_motors() {
       break;
     }
 
-    if (calibration_count >= 250) {
+    if (leftTicks > 2427) {
       error = leftTicks - rightTicks;
       int adjustment = error / kp;
       right_PWM += adjustment;
