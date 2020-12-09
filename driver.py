@@ -18,7 +18,7 @@ else:
 
 ser = serial.Serial(port=port, baudrate=9600, timeout=1)
 
-time.sleep(20)  # wait for Arduino to start up
+time.sleep(10)  # wait for Arduino to start up
 ser.flushInput()
 
 shared_arr = [0]
