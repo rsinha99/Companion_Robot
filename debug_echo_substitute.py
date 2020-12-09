@@ -1,6 +1,6 @@
 # This script is used in place of the Amazon Echo for quicker testing
 import driver
-import camera
+# import camera
 from threading import Thread
 import facerec_from_webcam_faster as face_rec
 import time
