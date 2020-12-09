@@ -5,12 +5,42 @@ from threading import Event
 
 #   1. Process each video frame at 1/4 resolution (though still display it at full resolution)
 #   2. Only detect faces in every other frame of video.
+isNvidia = True
 
 # Get a reference to webcam #0 (the default one)
-cameraNumber = 'nvarguscamerasrc sensor-id=0 ee-mode=2 ee-strength=0 tnr-mode=2 tnr-strength=1 ! video/x-raw(memory:NVMM), width=3264, height=2464, framerate=21/1, format=NV12 ! nvvidconv flip-method=2 ! video/x-raw, width=800, height=600, format=BGRx ! videoconvert ! video/x-raw, format=BGR ! appsink'
+def gstreamer_pipeline(
+        capture_width=3280,
+        capture_height=2464,
+        display_width=820,
+        display_height=616,
+        framerate=15,
+        flip_method=2,
+):
+    return (
+            "nvarguscamerasrc ! "
+            "video/x-raw(memory:NVMM), "
+            "width=(int)%d, height=(int)%d, "
+            "format=(string)NV12, framerate=(fraction)%d/1 ! "
+            "nvvidconv flip-method=%d ! "
+            "video/x-raw, width=(int)%d, height=(int)%d, format=(string)BGRx ! "
+            "videoconvert ! "
+            "video/x-raw, format=(string)BGR ! appsink"
+            % (
+                capture_width,
+                capture_height,
+                framerate,
+                flip_method,
+                display_width,
+                display_height,
+            )
+    )
 
-# 0 is the buildin camera if available
-video_capture = cv2.VideoCapture(cameraNumber)
+
+# To flip the image, modify the flip_method parameter (0 and 2 are the most common)
+if isNvidia:
+    video_capture = cv2.VideoCapture(gstreamer_pipeline(), cv2.CAP_GSTREAMER)
+else:
+    video_capture = cv2.VideoCapture(0)
 
 # Load Becca's face and learn how to recognize it
 # becca_image = face_recognition.load_image_file("becca.jpg")

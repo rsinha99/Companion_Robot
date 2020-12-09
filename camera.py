@@ -23,7 +23,7 @@ buffer = 64
 pts = deque(maxlen=buffer)
 currX = None
 
-isNvidia = False
+isNvidia = True
 debug = True
 event = Event()
 
