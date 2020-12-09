@@ -71,7 +71,7 @@ def left():
 
 def nav_test():
     ser.write(b'\x02')  # Enter Following Mode
-    while True:
+    for i in range(5):
         ser.write(b'\x40')
         time.sleep(5)
         ser.write(b'\x80')
@@ -79,14 +79,14 @@ def nav_test():
         ser.write(b'\xC0')
         time.sleep(5)
 
-    ser.write(b'\x03')  # Enter Calibration Mode
-    time.sleep(2)
-    
-    while True:
-        if ser.in_waiting > 0:
-            msg = ser.read(1)
-            print("Message from Arduino:")
-            print(hexlify(msg))
+    # ser.write(b'\x03')  # Enter Calibration Mode
+    # time.sleep(2)
+    #
+    # while True:
+    #     if ser.in_waiting > 0:
+    #         msg = ser.read(1)
+    #         print("Message from Arduino:")
+    #         print(hexlify(msg))
 
 
 def calibrate():
