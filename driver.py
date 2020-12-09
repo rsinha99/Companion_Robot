@@ -127,8 +127,9 @@ def follow_thread():
         time.sleep(1)
 
 
-
-
+# TODO This sequence of commands doesn't respond. I'll work on it later
+#   I think I might need to have the Arduino send back the commands it receives to make sure the correct
+#   commands are being received and processed.
 if __name__ == "__main__":
     print("starting...")
     time.sleep(10)

@@ -82,13 +82,13 @@ void setup() {
 }
 
 void loop() {
-  centerDistance = centerUltrasound.getDistance();
-  if (centerDistance <= STOP_DISTANCE_CENTER) {   // This means sometimes it will halt while turning in place, but... eh, I'll figure that out later
-    updateDir(halt);
-    respondToCurrDir();
-    isExecuting = false;
-    mode = waiting; // This is to prevent any shenanigans
-  }
+//  centerDistance = centerUltrasound.getDistance();
+//  if (centerDistance <= STOP_DISTANCE_CENTER) {   // This means sometimes it will halt while turning in place, but... eh, I'll figure that out later
+//    updateDir(halt);
+//    respondToCurrDir();
+//    isExecuting = false;
+//    mode = waiting; // This is to prevent any shenanigans
+//  }
   acceptCommand();
   switch (mode) {
     case calibration:
@@ -109,7 +109,7 @@ void loop() {
       break;
   }
   if (isExecuting) {
-    Serial.write(command);
+    // Serial.write(command);
     processCommand(command);
     isExecuting = false;
   }
