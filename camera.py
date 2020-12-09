@@ -24,7 +24,7 @@ pts = deque(maxlen=buffer)
 currX = None
 
 isNvidia = True
-debug = True
+debug = False
 event = Event()
 
 # Get a reference to webcam #0 (the default one)
@@ -73,7 +73,7 @@ def camera_thread():
 
         # resize the frame, blur it, and convert it to the HSV
         # color space
-        frame = imutils.resize(frame, width=1800)
+        frame = imutils.resize(frame, width=720)
         # blurred = cv2.GaussianBlur(frame, (11, 11), 0)
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
