@@ -50,11 +50,14 @@ def thread_read():
 
 
 def forward():
+    print("Enter following mode")
     ser.write(b'\x02')
     time.sleep(2)
 
+    print("Go Foward...")
     ser.write(b'\xC0')
     time.sleep(5)
+    print("Stopping")
     ser.write(b'\x10')
     time.sleep(1)
 
@@ -123,6 +126,9 @@ def follow_thread():
 if __name__ == "__main__":
     print("starting...")
     time.sleep(2)
+    print("Entering Calibration Mode")
+    calibrate()
+    print("Going Forward")
     forward()
     print("Entering Nav Test")
     nav_test()
