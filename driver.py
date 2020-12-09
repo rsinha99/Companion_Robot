@@ -115,6 +115,8 @@ def follow_thread():
 if __name__ == "__main__":
     print("starting...")
     forward()
+    print("Entering Nav Test")
+    nav_test()
     # color = Thread(target=camera.camera_thread)
     # color.start()
     # while True:
