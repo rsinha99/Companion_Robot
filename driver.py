@@ -18,7 +18,14 @@ else:
 
 ser = serial.Serial(port=port, baudrate=9600, timeout=1)
 
-time.sleep(10)  # wait for Arduino to start up
+# Wait for Arduino to connect
+while True:
+    if ser.in_waiting > 0:
+        msg = ser.read(1)
+        if msg == b'\xFF':
+            print("Arduino connected")
+            break
+
 ser.flushInput()
 
 shared_arr = [0]

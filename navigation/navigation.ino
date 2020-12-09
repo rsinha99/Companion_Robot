@@ -75,6 +75,7 @@ void setup() {
   while (!Serial) {
     ; // wait for serial to connect
   }
+  Serial.write(B11111111);
   go_stop(); // Guarantee that both motors are not moving at start
   set_speed(right_PWM, left_PWM);
   delay(500);
