@@ -105,6 +105,8 @@ def calibrate():
 
 # TODO Modify the code to account for target being on the outer edges of the camera
 # TODO Modify the camera thread code to have variables that store the width of the camera
+# TODO make the code more robust so that if the target disappears for a few frames,
+#   the robot doesn't just stop and start searching immediately.
 def follow_thread():
     ser.write(b'\x02')          # Set robot to Following Mode
     while True:
@@ -117,7 +119,7 @@ def follow_thread():
 
         if camera.currX == -1:    # No target to follow is detected
             ser.write(b'\x46')      # Turn left until target is found
-            while camera.currX == -1 or camera.currX < 480 or camera.currX > 240:
+            while camera.currX == -1 or camera.currX < 240 or camera.currX > 480:
                 print(camera.currX)
                 time.sleep(1)
                 # keep turning left until target is centered
