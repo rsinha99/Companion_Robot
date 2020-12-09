@@ -122,6 +122,7 @@ def follow_thread():
 
 if __name__ == "__main__":
     print("starting...")
+    time.sleep(2)
     forward()
     print("Entering Nav Test")
     nav_test()
