@@ -2,7 +2,7 @@
 import driver
 # import camera
 from threading import Thread
-import facerec_from_webcam_faster as face_rec
+# import facerec_from_webcam_faster as face_rec
 import time
 
 threads = []
