@@ -18,7 +18,7 @@ else:
 
 ser = serial.Serial(port=port, baudrate=9600, timeout=1)
 
-time.sleep(2)  # wait for Arduino to start up
+time.sleep(5)  # wait for Arduino to start up
 ser.flushInput()
 
 shared_arr = [0]
@@ -113,7 +113,7 @@ def follow_thread():
 
 if __name__ == "__main__":
     print("starting...")
-    nav_test()
+    forward()
     # color = Thread(target=camera.camera_thread)
     # color.start()
     # while True:
