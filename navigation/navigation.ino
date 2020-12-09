@@ -117,11 +117,12 @@ void loop() {
 
 // Accept Command. Read serial; add command to queue if in Distance Mode and the instructions is not a System Instruction
 void acceptCommand() {
-  if (Serial.available() > 0) {
+  while (Serial.available() > 0) {
     command = Serial.read();
     bool isSystemCommand = command >> 4 == 1;
     if (isSystemCommand) {
       processCommand(command);
+      break;
     } else if (mode == distance) {
       q.push(&command);
     } else {
