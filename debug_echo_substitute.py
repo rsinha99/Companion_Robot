@@ -1,6 +1,6 @@
 # This script is used in place of the Amazon Echo for quicker testing
 import driver
-# import camera
+import camera
 from threading import Thread
 # import facerec_from_webcam_faster as face_rec
 import time
@@ -35,21 +35,20 @@ def dance():
 
 if __name__ == '__main__':
     print("starting...")
-    # cam_thread = Thread(target=camera.camera_thread)
+    cam_thread = Thread(target=camera.camera_thread)
     # face_rec_thread = Thread(target=face_rec.facerec_thread)
     # face_rec_thread.start()
     # threads.append(face_rec_thread)
-    # cam_thread.start()
-    # threads.append(cam_thread)
+    cam_thread.start()
+    threads.append(cam_thread)
     # forward()
-    driver.forward()
+    # driver.forward()
 
     try:
         while True:
-            None
-            # command = input()
-            # if command == 'follow':
-            #     follow_me()
+            command = input()
+            if command == 'follow':
+                follow_me()
     except (KeyboardInterrupt, Exception):
         driver.event.set()
         # face_rec.event.set()

@@ -3,7 +3,7 @@ import serial
 import time
 from threading import Thread, Event
 from binascii import hexlify
-# import camera
+import camera
 
 
 
@@ -100,7 +100,7 @@ def calibrate():
             msg = ser.read(1)
             print("Message from Arduino")
             print(hexlify(msg))
-            break;
+            break
 
 
 # TODO Modify the code to account for target being on the outer edges of the camera
@@ -108,6 +108,10 @@ def calibrate():
 def follow_thread():
     ser.write(b'\x02')          # Set robot to Following Mode
     while True:
+        if ser.in_waiting > 0:
+            if ser.read(1) == b'\x7f':
+                print("Robot arrived")
+                break
         if event.is_set():
             break
 
@@ -122,7 +126,6 @@ def follow_thread():
         else:
             ser.write(b'\xC0')
 
-        # TODO if robot returns serial code "Obstacle", close this thread (break from loop)
         print(camera.currX)
         time.sleep(1)
 
