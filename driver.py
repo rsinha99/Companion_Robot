@@ -74,6 +74,7 @@ def left():
 
 def nav_test():
     ser.write(b'\x02')  # Enter Following Mode
+    time.sleep(2)
     for i in range(2):
         ser.write(b'\x40')
         time.sleep(5)
@@ -94,7 +95,12 @@ def nav_test():
 
 def calibrate():
     ser.write(b'\x03')
-    time.sleep(2)
+    while True:
+        if ser.in_waiting > 0:
+            msg = ser.read(1)
+            print("Message from Arduino")
+            print(hexlify(msg))
+            break;
 
 
 # TODO Modify the code to account for target being on the outer edges of the camera
@@ -125,7 +131,7 @@ def follow_thread():
 
 if __name__ == "__main__":
     print("starting...")
-    time.sleep(2)
+    time.sleep(10)
     print("Going Forward")
     forward()
     print("Entering Nav Test")
