@@ -29,13 +29,17 @@ def follow_me():
     threads.append(follow_thread)
 
 
+def calibrate():
+    driver.calibrate()
+
+
 def dance():
     None
 
 
 if __name__ == '__main__':
     print("starting...")
-    cam_thread = Thread(target=camera.camera_thread)
+    cam_thread = Thread(target=camera.camera_thread, name="following_thread")
     # face_rec_thread = Thread(target=face_rec.facerec_thread)
     # face_rec_thread.start()
     # threads.append(face_rec_thread)
@@ -50,10 +54,23 @@ if __name__ == '__main__':
             time.sleep(1)
             if command == 'follow':
                 follow_me()
+            elif command == 'calibrate':
+                calibrate()
+            elif command == 'stop following':
+                driver.event.set()
+                for i in range(len(threads)):
+                    if threads[i].name == "following thread":
+                        threads.pop(i).join()
+            elif command == 'stop all':
+                driver.event.set()
+                camera.event.set()
+                for i in range(len(threads)):
+                    threads.pop().join()
+
     except (KeyboardInterrupt, Exception):
         driver.event.set()
         # face_rec.event.set()
-        # camera.event.set()
+        camera.event.set()
         for i in range(len(threads)):
             threads.pop().join()
 

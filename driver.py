@@ -108,6 +108,7 @@ def calibrate():
 # TODO make the code more robust so that if the target disappears for a few frames,
 #   the robot doesn't just stop and start searching immediately.
 def follow_thread():
+    event.clear()
     ser.write(b'\x02')          # Set robot to Following Mode
     while True:
         if ser.in_waiting > 0:
