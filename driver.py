@@ -103,8 +103,7 @@ def calibrate():
             break
 
 
-# TODO Modify the code to account for target being on the outer edges of the camera
-# TODO Modify the camera thread code to have variables that store the width of the camera
+# TODO Modify the code to account for target being on the outer edges of the camera (variable speeds)
 # TODO make the code more robust so that if the target disappears for a few frames,
 #   the robot doesn't just stop and start searching immediately.
 def follow_thread():
